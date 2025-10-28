@@ -15,6 +15,93 @@ body {
   color: #333;
 }
 
+/* Login Styles */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  height: 100%;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: #6c757d;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-group input {
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.form-group small {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.login-footer {
+  margin-top: 16px;
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+}
+
+.login-footer small {
+  font-size: 12px;
+  color: #6c757d;
+}
+
 .app {
   width: 400px;
   height: 600px;

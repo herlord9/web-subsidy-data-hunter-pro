@@ -8,7 +8,10 @@
     "build": "webpack --mode production && node scripts/post-build.js",
     "build:dev": "webpack --mode development && node scripts/post-build.js",
     "clean": "rimraf dist",
-    "install:extension": "npm run build && echo 'Extension built! Load the dist folder in Chrome as an unpacked extension.'"
+    "install:extension": "npm run build && echo 'Extension built! Load the dist folder in Chrome as an unpacked extension.'",
+    "env:test": "node switch-env.js test",
+    "env:dev": "node switch-env.js dev",
+    "env:prod": "node switch-env.js prod"
   },
   "dependencies": {
     "react": "^18.2.0",

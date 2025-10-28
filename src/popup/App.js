@@ -4,8 +4,10 @@ import { ScraperForm } from './components/ScraperForm';
 import { DataTable } from './components/DataTable';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
+import { Login } from './components/Login';
 import { useScrapers } from './hooks/useScrapers';
 import { useCurrentTab } from './hooks/useCurrentTab';
+import { useAuth } from './hooks/useAuth';
 import './styles.css';
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
   
   const { scrapers, addScraper, updateScraper, deleteScraper } = useScrapers();
   const { currentTab, isValidTab } = useCurrentTab();
+  const { isAuthenticated, userInfo, isLoading: authLoading, sessionExpired, logout, checkAuthStatus } = useAuth();
 
   // 检查当前标签页是否有效
   useEffect(() => {
@@ -214,6 +217,44 @@ function App() {
     }
   };
 
+  const handleLoginSuccess = (data) => {
+    console.log('登录成功，用户信息:', data.user);
+    checkAuthStatus();
+  };
+
+  const handleLogout = () => {
+    logout();
+    setCurrentView('list');
+    setScrapedData([]);
+  };
+
+  // 如果正在检查登录状态
+  if (authLoading) {
+    return (
+      <div className="app">
+        <div className="header">
+          <h1>数据猎手专业版</h1>
+        </div>
+        <LoadingSpinner message="正在加载..." />
+      </div>
+    );
+  }
+
+  // 如果未登录，显示登录页面
+  if (!isAuthenticated) {
+    return (
+      <div className="app">
+        <div className="header">
+          <h1>数据猎手专业版</h1>
+        </div>
+        <Login 
+          onLoginSuccess={handleLoginSuccess} 
+          sessionExpired={sessionExpired}
+        />
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="app">
@@ -245,6 +286,32 @@ function App() {
       <div className="header">
         <h1>数据猎手专业版</h1>
         <div className="header-buttons">
+          {userInfo && (
+            <span className="user-info" style={{ 
+              marginRight: '12px', 
+              fontSize: '12px', 
+              color: '#6c757d',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              👤 {userInfo.username}
+              <button 
+                onClick={handleLogout}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                退出
+              </button>
+            </span>
+          )}
           {currentView !== 'list' && (
             <button 
               className="back-button"

@@ -31,12 +31,13 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
   const [selectedCity, setSelectedCity] = React.useState('');
   const [selectedDistrict, setSelectedDistrict] = React.useState('');
   const [exportType, setExportType] = React.useState(null); // 'csv', 'json', 'db'
+  const [isInferringRegion, setIsInferringRegion] = React.useState(false);
 
   // 从scraper中获取数据库配置
   const dbConfig = scraper?.databaseConfig;
 
   // 处理导出前的 location 选择
-  const handleBeforeExport = (type) => {
+  const handleBeforeExport = async (type) => {
     const selectedData = getSelectedData();
     const exportData = data.length > 0 && Object.keys(rowSelection).length > 0 
       ? selectedData 
@@ -46,21 +47,141 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
     setPendingExportData(exportData);
     setExportType(type);
     
-    // 初始化级联选择状态（不填充默认值，让用户自己选择）
+    // 初始化级联选择状态
     setSelectedProvince('山东省');
     setSelectedCity('');
     setSelectedDistrict('');
     setLocationInput('');
     
-    setShowLocationInput(true);
+    // 尝试从第一条数据的 href 推断地区
+    if (exportData.length > 0 && exportData[0].href) {
+      setIsInferringRegion(true);
+      
+      try {
+        const storage = await chrome.storage.local.get(['accessToken', 'apiUrl']);
+        const token = storage.accessToken;
+        const apiUrl = storage.apiUrl;
+        
+        if (token && apiUrl) {
+          // 从完整 URL 中提取域名
+          let domain = '';
+          try {
+            const urlObj = new URL(exportData[0].href);
+            domain = urlObj.hostname; // 提取域名，如 www.yichang.gov.cn
+          } catch (e) {
+            console.error('URL 解析失败:', e);
+            domain = exportData[0].href; // 降级使用完整 URL
+          }
+          
+          const requestUrl = `${apiUrl}/api/chrome-data/infer-region?url=${encodeURIComponent(domain)}`;
+          console.log('🔍 发送地区推断请求:', requestUrl);
+          console.log('📡 Token:', token ? `${token.substring(0, 20)}...` : 'null');
+          
+          const response = await fetch(requestUrl, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          console.log('📥 响应状态:', response.status, response.statusText);
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('✅ 自动推断地区成功:', result);
+            
+            // 如果推断成功（至少有省份），根据置信度决定是否弹框
+            if (result.province) {
+              // 置信度高，直接导出
+              if (result.confidence === 'high') {
+                console.log('✅ 自动识别成功（高置信度），直接导出:', result);
+                setIsInferringRegion(false);
+                
+                // 构建 location 字符串
+                const locationParts = [result.province];
+                if (result.city) locationParts.push(result.city);
+                if (result.county) locationParts.push(result.county);
+                const location = locationParts.join(' > ');
+                
+                // 为每条数据添加 location
+                const enrichedData = exportData.map(item => ({
+                  ...item,
+                  location: location
+                }));
+                
+                // 直接执行导出
+                await executeExport(enrichedData, type);
+                return;
+              } else {
+                // 置信度中等，显示弹框让用户确认
+                console.log('⚠️ 置信度中等，显示弹框确认:', result);
+                if (result.province) setSelectedProvince(result.province);
+                if (result.city) setSelectedCity(result.city);
+                if (result.county) setSelectedDistrict(result.county);
+                setShowLocationInput(true);
+              }
+            } else {
+              // 推断不完整，显示弹框让用户手动选择
+              console.log('⚠️ 自动识别失败，显示弹框:', result);
+              setShowLocationInput(true);
+            }
+          } else {
+            // API 调用失败，显示弹框
+            console.error('❌ API 调用失败:', response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('错误详情:', errorText);
+            setShowLocationInput(true);
+          }
+        } else {
+          // 没有登录信息，显示弹框
+          setShowLocationInput(true);
+        }
+      } catch (error) {
+        console.error('推断地区失败:', error);
+        // 推断失败，显示弹框让用户手动选择
+        setShowLocationInput(true);
+      } finally {
+        setIsInferringRegion(false);
+      }
+    } else {
+      // 没有 href，显示弹框
+      setShowLocationInput(true);
+    }
+  };
+
+  // 执行导出操作（提取公共逻辑）
+  const executeExport = async (enrichedData, type) => {
+    if (type === 'db') {
+      // 数据库导出 - 使用默认的 Chrome 数据导入接口
+      const storage = await chrome.storage.local.get(['apiUrl']);
+      const userApiUrl = storage.apiUrl;
+      
+      // 如果配置了自定义 API URL，使用配置的
+      // 否则使用默认的 Chrome 数据导入接口
+      let fullApiUrl;
+      if (dbConfig && dbConfig.apiUrl && dbConfig.apiUrl.trim()) {
+        fullApiUrl = dbConfig.apiUrl.startsWith('http') 
+          ? dbConfig.apiUrl 
+          : `${userApiUrl}${dbConfig.apiUrl}`;
+      } else {
+        // 使用默认接口
+        fullApiUrl = `${userApiUrl}/api/chrome-data/import`;
+      }
+      
+      setPostData({
+        url: fullApiUrl,
+        method: 'POST',
+        payload: enrichedData
+      });
+      setShowPostPreview(true);
+    } else if (type === 'csv') {
+      exportToCSV(enrichedData);
+    } else if (type === 'json') {
+      exportToJSON(enrichedData);
+    }
   };
 
   const handleExportToDB = async () => {
-    if (!dbConfig || dbConfig.dbType === 'none' || !dbConfig.dbType) {
-      alert('请先在抓取器配置中设置数据库连接');
-      return;
-    }
-
+    // 直接调用导出前的处理，不检查配置
     handleBeforeExport('db');
   };
 
@@ -79,56 +200,8 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
       location: location || item.location || ''
     }));
 
-    // 根据导出类型继续导出流程
-    if (exportType === 'db') {
-      // 数据库导出
-      if (dbConfig.apiUrl && dbConfig.apiUrl.trim()) {
-        setPostData({
-          url: dbConfig.apiUrl,
-          method: 'POST',
-          payload: enrichedData
-        });
-        setShowPostPreview(true);
-        return;
-      }
-
-      // 没有配置API，走原来的逻辑
-      setShowExportLogs(true);
-      setExportLogs(['开始导出...']);
-
-      try {
-        // 发送到background处理
-        const result = await chrome.runtime.sendMessage({
-          action: 'exportToDatabase',
-          data: enrichedData,
-          config: dbConfig
-        });
-
-        if (result.success) {
-          // 显示详细日志
-          if (result.details && result.details.logs) {
-            setExportLogs(result.details.logs);
-          } else {
-            setExportLogs([
-              '✓ 导出成功',
-              `✓ 导出 ${result.details?.recordCount || enrichedData.length} 条记录`,
-              `✓ 数据库: ${result.details?.dbType || dbConfig.dbType}`,
-              `✓ 表名: ${result.details?.tableName || dbConfig.tableName}`
-            ]);
-          }
-        } else {
-          setExportLogs([`✗ 导出失败: ${result.error}`]);
-        }
-      } catch (error) {
-        setExportLogs([`✗ 导出出错: ${error.message}`]);
-      }
-    } else if (exportType === 'csv') {
-      // CSV 导出
-      exportToCSV(enrichedData);
-    } else if (exportType === 'json') {
-      // JSON 导出
-      exportToJSON(enrichedData);
-    }
+    // 使用统一的导出函数
+    await executeExport(enrichedData, exportType);
   };
 
   // 确认发送POST请求
@@ -138,9 +211,22 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
     setExportLogs(['开始导出...']);
 
     try {
+      // 获取存储的 token
+      const storage = await chrome.storage.local.get(['accessToken', 'apiUrl']);
+      const token = storage.accessToken;
+
+      if (!token) {
+        setImportResult(null);
+        setExportLogs(['✗ 未登录，请先登录后再导出']);
+        return;
+      }
+
       const response = await fetch(postData.url, {
         method: postData.method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(postData.payload)
       });
 
@@ -164,7 +250,7 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
         }, 1500);
       } else {
         setImportResult(null);
-        setExportLogs([`✗ 导出失败: ${result.error || '未知错误'}`]);
+        setExportLogs([`✗ 导出失败: ${result.error || result.detail || '未知错误'}`]);
       }
     } catch (error) {
       setImportResult(null);
@@ -446,15 +532,9 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
           className="btn btn-success"
           onClick={handleExportToDB}
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          disabled={!dbConfig || dbConfig.dbType === 'none' || !dbConfig.dbType}
         >
           📊 导出到数据库
         </button>
-        {(!dbConfig || dbConfig.dbType === 'none' || !dbConfig.dbType) && (
-          <span style={{ fontSize: '12px', color: '#6c757d', alignSelf: 'center' }}>
-            （请在抓取器中配置数据库连接）
-          </span>
-        )}
       </div>
 
       {/* Location输入框模态框 */}
@@ -490,6 +570,11 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
             }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#667eea' }}>
                 📍 填写地理位置信息
+                {isInferringRegion && (
+                  <span style={{ fontSize: '12px', color: '#6c757d', fontWeight: '400', marginLeft: '8px' }}>
+                    正在自动识别...
+                  </span>
+                )}
               </h3>
               <button 
                 onClick={() => setShowLocationInput(false)}
@@ -593,6 +678,25 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
               </div>
             </div>
             
+            {/* 验证提示 */}
+            {(!selectedProvince || (selectedProvince !== '山东省' && !selectedCity)) && (
+              <div style={{
+                background: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '6px',
+                padding: '10px 12px',
+                marginBottom: '12px',
+                fontSize: '13px',
+                color: '#856404',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>⚠️</span>
+                <span>地区数据不完整，请至少选择省份和市</span>
+              </div>
+            )}
+            
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setShowLocationInput(false)}
@@ -611,20 +715,25 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
               >
                 取消
               </button>
-              <button
+              <button 
                 onClick={handleConfirmLocation}
+                disabled={!selectedProvince || (selectedProvince !== '山东省' && !selectedCity)}
                 style={{
                   padding: '10px 20px',
-                  background: '#667eea',
+                  background: (!selectedProvince || (selectedProvince !== '山东省' && !selectedCity)) ? '#ccc' : '#667eea',
                   color: 'white',
                   border: 'none',
                   borderRadius: '6px',
-                  cursor: 'pointer',
+                  cursor: (!selectedProvince || (selectedProvince !== '山东省' && !selectedCity)) ? 'not-allowed' : 'pointer',
                   fontSize: '14px',
                   fontWeight: '600'
                 }}
-                onMouseOver={(e) => e.target.style.background = '#5568d3'}
-                onMouseOut={(e) => e.target.style.background = '#667eea'}
+                onMouseOver={(e) => {
+                  if (!e.target.disabled) e.target.style.background = '#5568d3';
+                }}
+                onMouseOut={(e) => {
+                  if (!e.target.disabled) e.target.style.background = '#667eea';
+                }}
               >
                 ✅ 确认并导出
               </button>

@@ -25,9 +25,18 @@ cd easy-scraper-clone
 # 安装依赖
 npm install
 
-# 构建扩展
+# 构建扩展（默认使用测试环境）
 npm run build
 ```
+
+### 环境配置
+插件支持三种环境：
+
+- **测试环境**（默认）: `npm run env:test`
+- **开发环境**: `npm run env:dev`
+- **生产环境**: `npm run env:prod`
+
+切换环境会自动重新编译插件。
 
 ### 加载到浏览器
 1. 打开 Chrome 浏览器

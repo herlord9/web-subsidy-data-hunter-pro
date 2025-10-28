@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_CONFIG } from '../../config/api';
 
 export function ScraperForm({ scraper, onSave, onCancel, currentTab }) {
   const [formData, setFormData] = useState({
@@ -332,7 +333,7 @@ export function ScraperForm({ scraper, onSave, onCancel, currentTab }) {
         {formData.databaseConfig?.dbType && formData.databaseConfig.dbType !== 'none' && (
           <>
             <div className="form-group">
-              <label className="form-label">API接口地址（完整URL）</label>
+              <label className="form-label">API接口路径</label>
               <input
                 type="text"
                 className="form-input"
@@ -341,10 +342,11 @@ export function ScraperForm({ scraper, onSave, onCancel, currentTab }) {
                   ...formData.databaseConfig,
                   apiUrl: e.target.value
                 })}
-                placeholder="http://localhost:5000/api/export-data"
+                placeholder="/api/chrome-data/import"
               />
               <small style={{ display: 'block', marginTop: '4px', color: '#6c757d', fontSize: '12px' }}>
-                扩展将只发送抓取的数据数组到您的后端，数据库配置在后端管理
+                当前环境：{API_CONFIG.BASE_URL}<br/>
+                完整地址：{API_CONFIG.BASE_URL}{formData.databaseConfig.apiUrl || '/api/chrome-data/import'}
               </small>
             </div>
           </>
