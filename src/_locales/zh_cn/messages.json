@@ -1,0 +1,379 @@
+{
+  "addReview": {
+    "description": "为应用程序添加评论的按钮标签。",
+    "message": "添加评论"
+  },
+  "allowPermissions": {
+    "description": "允许扩展权限的按钮标签。",
+    "message": "允许权限"
+  },
+  "autoScroll": {
+    "description": "控制是否在抓取时自动滚动至每个项目的开关标签。",
+    "message": "自动滚动"
+  },
+  "back": {
+    "description": "返回到前一屏幕的按钮标签。",
+    "message": "返回"
+  },
+  "cancel": {
+    "description": "取消操作的标签。",
+    "message": "取消"
+  },
+  "changeList": {
+    "description": "更改要抓取的列表的按钮标签。",
+    "message": "更换列表"
+  },
+  "changeSelectionLevel": {
+    "description": "更改选择元素时的选择级别的操作描述。",
+    "message": "更改选择级别"
+  },
+  "chooseFile": {
+    "description": "选择要上传文件的按钮标签。",
+    "message": "选择文件"
+  },
+  "click": {
+    "description": "点击操作的标签。",
+    "message": "点击"
+  },
+  "clickLoadMore": {
+    "description": "点击按钮在同一页面上加载更多项目的选项标签。",
+    "message": "点击按钮在同一页面上加载更多项目"
+  },
+  "clickNextPage": {
+    "description": "点击链接以导航到下一页以加载更多项目的选项标签。",
+    "message": "点击链接导航至下一页"
+  },
+  "column": {
+    "description": "用于从上传的 CSV 中选择包含要抓取的 URL 的列的 select 元素的标签。",
+    "message": "列"
+  },
+  "confirm": {
+    "description": "确认操作的标签。",
+    "message": "确认"
+  },
+  "continue": {
+    "description": "继续至下一屏幕的按钮标签。",
+    "message": "继续"
+  },
+  "copy": {
+    "description": "用于将数据复制到剪贴板的按钮标签。",
+    "message": "复制"
+  },
+  "csvFile": {
+    "description": "上传CSV文件的文件输入标签",
+    "message": "CSV 文件"
+  },
+  "defaultScraperName": {
+    "description": "详情页面抓取器的默认名称。",
+    "message": "从 $DOMAIN$ 抓取详情",
+    "placeholders": {
+      "domain": {
+        "content": "$1",
+        "example": "example.com"
+      }
+    }
+  },
+  "delete": {
+    "description": "删除抓取器的菜单项标签。",
+    "message": "删除"
+  },
+  "dismiss": {
+    "description": "忽略警告的操作。",
+    "message": "忽略"
+  },
+  "duration": {
+    "description": "显示当前抓取持续时间的标签。",
+    "message": "持续时间"
+  },
+  "esc": {
+    "description": "Escape键的标签。",
+    "message": "Esc"
+  },
+  "export": {
+    "description": "导出抓取器的菜单项标签。",
+    "message": "导出"
+  },
+  "extractData": {
+    "description": "运行抓取并从每个网址提取数据的菜单项标签。",
+    "message": "提取数据"
+  },
+  "finish": {
+    "description": "完成在页面上选择元素的按钮标签。",
+    "message": "完成"
+  },
+  "headerRow": {
+    "description": "说明上传的CSV文件必须以标题行开始的帮助文本。",
+    "message": "必须以标题行开始"
+  },
+  "headerRowRequired": {
+    "description": "当上传的CSV似乎缺少标题行时显示的警告。",
+    "message": "需要标题行"
+  },
+  "help": {
+    "description": "打开帮助页面的按钮标签。",
+    "message": "帮助"
+  },
+  "hideOptions": {
+    "description": "隐藏更多抓取选项的按钮标签。",
+    "message": "隐藏选项"
+  },
+  "import": {
+    "description": "导入抓取器的菜单项标签。",
+    "message": "导入"
+  },
+  "install": {
+    "description": "安装应用程序最新版本的按钮标签。",
+    "message": "安装最新版本"
+  },
+  "invalidTab": {
+    "description": "当目标页面为受限网站时的错误信息。",
+    "message": "此页面受限制。请尝试其他网站。"
+  },
+  "invalidVersion": {
+    "description": "指示用户安装应用程序的最新版本。",
+    "message": "$APP_NAME$ 已退出测试版！安装最新版本以获得最新更新。",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "简易抓取器"
+      }
+    }
+  },
+  "items": {
+    "description": "在抓取列表时显示项目数的标签。",
+    "message": "项目"
+  },
+  "loadMoreAction": {
+    "description": "选择如何在抓取时加载更多项目的下拉选择标签。",
+    "message": "加载更多项目的操作"
+  },
+  "max": {
+    "description": "控制加载更多项目或页面时等待的最大时间的输入标签。",
+    "message": "最大"
+  },
+  "maxItems": {
+    "description": "设置抓取项目数量上限的输入标签。",
+    "message": "最大项目数"
+  },
+  "maxItemsHelp": {
+    "description": "帮助文本，通知用户如果不设置限制，应将最大项目输入留空。",
+    "message": "留空则无限制"
+  },
+  "maxItemsReached": {
+    "description": "警告描述，指出已达到抓取项目数量的最大限制。",
+    "message": "已成功抓取到指定的限制数量。增加最大项目选项以继续抓取。"
+  },
+  "mediaUrl": {
+    "description": "从元素捕获的媒体网址字段的标签。",
+    "message": "媒体网址"
+  },
+  "min": {
+    "description": "控制加载更多项目或页面时等待的最小时间的输入标签。",
+    "message": "最小"
+  },
+  "missingTabError": {
+    "description": "无法访问目标选项卡数据时的错误消息。",
+    "message": "您用于此任务的选项卡已关闭。请关闭此窗口并重试。"
+  },
+  "missingTabPermission": {
+    "description": "无法访问目标标签页数据时的错误信息。",
+    "message": "无法访问标签页。请关闭此窗口并重试。"
+  },
+  "missingUrlColumn": {
+    "description": "当 CSV 文件里缺少包含 URL 的列时显示的错误信息。",
+    "message": "无法找到包含 URL 的列。请选取另一个文件。"
+  },
+  "newScraper": {
+    "description": "创建新抓取工具的按钮标签。",
+    "message": "新建抓取工具"
+  },
+  "noData": {
+    "description": "当表格中没有数据显示时用作占位符。",
+    "message": "没有数据显示"
+  },
+  "noFileChosen": {
+    "description": "当没有文件被选择时显示的信息。",
+    "message": "未选择文件"
+  },
+  "noList": {
+    "description": "当页面上找不到列表时显示的占位符。",
+    "message": "无法在页面上找到列表"
+  },
+  "none": {
+    "description": "在抓取时不加载更多项目的选项标签。",
+    "message": "无"
+  },
+  "options": {
+    "description": "显示抓取器选项的按钮标签。",
+    "message": "选项"
+  },
+  "pages": {
+    "description": "在抓取列表时显示页数的标签。",
+    "message": "页面"
+  },
+  "permissionsDescription": {
+    "description": "解释扩展需要额外权限来访问和抓取网址的帮助文本。",
+    "message": "$APP_NAME$ 需要额外权限来访问和抓取网址",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "简易抓取器"
+      }
+    }
+  },
+  "preview": {
+    "description": "指示所显示数据为抓取器预览的徽章文本。",
+    "message": "预览"
+  },
+  "remainingPages": {
+    "description": "显示在抓取详情页面时剩余要抓取的页数的标签。",
+    "message": "剩余"
+  },
+  "rename": {
+    "description": "重命名抓取器的菜单项标签。",
+    "message": "重命名"
+  },
+  "reviewDescription": {
+    "description": "请求用户为应用程序留下评论。",
+    "message": "嗨，我是$NAME$。我创建$APP_NAME$是为了帮助人们节省时间。如果您喜欢它，非常希望您能给予5星评价，帮助更多人发现$APP_NAME$。非常感谢您！",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "简易抓取器"
+      },
+      "name": {
+        "content": "Namu"
+      }
+    }
+  },
+  "reviewTitle": {
+    "description": "感谢用户使用应用程序。",
+    "message": "感谢您使用 $APP_NAME$",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "简易抓取器"
+      }
+    }
+  },
+  "scrapeDetails": {
+    "description": "显示抓取列表中每个项目的详细页面的屏幕选项标签。",
+    "message": "抓取详情"
+  },
+  "scrapeDetailsTipDescription": {
+    "description": "关于抓取详细信息页面的提示说明，用于向用户解释操作步骤。",
+    "message": "要抓取列表中的每个 URL，请在将列表下载为 CSV 文件后，从右上角的菜单中选择 \"$LABEL$\"。",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "抓取详细信息"
+      }
+    }
+  },
+  "scrapeDetailsTipTitle": {
+    "description": "提示标题，用于教育用户关于抓取详情页面的信息。",
+    "message": "提示: 抓取详情页面"
+  },
+  "scrapeList": {
+    "description": "显示抓取列表屏幕选项的标签。",
+    "message": "抓取列表"
+  },
+  "scrapedPages": {
+    "description": "显示在抓取详情页面时已抓取的页数的标签。",
+    "message": "已抓取"
+  },
+  "scrapingComplete": {
+    "description": "提示抓取任务已完成的标题。",
+    "message": "抓取完成"
+  },
+  "scrapingStatus": {
+    "description": "表示抓取正在进行中的标签。",
+    "message": "正在抓取..."
+  },
+  "scrollDelay": {
+    "description": "控制抓取时每滚动至每个项目等待的毫秒数的输入标签。",
+    "message": "滚动延迟（毫秒）"
+  },
+  "scrollDown": {
+    "description": "向下滚动以加载更多项目的选项标签。",
+    "message": "向下滚动以加载更多项目"
+  },
+  "select": {
+    "description": "选择页面上元素的按钮标签。",
+    "message": "选择"
+  },
+  "selectElement": {
+    "description": "选择元素时显示的标题。",
+    "message": "选择元素"
+  },
+  "selectField": {
+    "description": "选择要捕获的字段的操作描述。",
+    "message": "选择字段"
+  },
+  "selectList": {
+    "description": "选择列表时显示的标题。",
+    "message": "选择列表"
+  },
+  "selectScraper": {
+    "description": "选择用于抓取每个网址的抓取工具的菜单项标签。",
+    "message": "选择抓取工具"
+  },
+  "selectScraperOption": {
+    "description": "指示选择当前域的抓取工具。",
+    "message": "为 $DOMAIN$ 选择抓取工具",
+    "placeholders": {
+      "domain": {
+        "content": "$1",
+        "example": "example.com"
+      }
+    }
+  },
+  "showOptions": {
+    "description": "显示更多抓取选项的按钮标签。",
+    "message": "显示选项"
+  },
+  "startScraping": {
+    "description": "开始抓取的按钮标签。",
+    "message": "开始抓取"
+  },
+  "stopScraping": {
+    "description": "停止抓取的按钮标签。",
+    "message": "停止抓取"
+  },
+  "tabNotFound": {
+    "description": "目标标签页不存在时的错误信息。",
+    "message": "未找到标签页。请关闭此窗口后重试。"
+  },
+  "testUrl": {
+    "description": "选择抓取工具时使用的测试网址的文本输入标签。",
+    "message": "测试网址"
+  },
+  "text": {
+    "description": "从元素捕获的文本字段的标签。",
+    "message": "文本"
+  },
+  "uploadUrls": {
+    "description": "上传文件中网址以进行抓取的菜单项标签。",
+    "message": "上传网址"
+  },
+  "url": {
+    "description": "从元素捕获的网址字段的标签。",
+    "message": "网址"
+  },
+  "urlFieldWarning": {
+    "description": "当选定的列名称是一个URL且CSV文件可能缺少标题行时显示的警告。",
+    "message": "列名称似乎是一个URL。请确保CSV文件以包含列名称的标题行开始。"
+  },
+  "verify": {
+    "description": "通过在页面上突出显示来验证所选元素的按钮标签。",
+    "message": "验证"
+  },
+  "waitTimeItems": {
+    "description": "控制加载更多项目时等待秒数的输入标签。",
+    "message": "加载更多项目的等待时间（秒）"
+  },
+  "waitTimePages": {
+    "description": "控制加载页面时等待秒数的输入标签。",
+    "message": "加载页面的等待时间（秒）"
+  }
+}

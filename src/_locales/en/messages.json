@@ -1,0 +1,379 @@
+{
+  "addReview": {
+    "description": "Label for the button to add a review for the application.",
+    "message": "Add a Review"
+  },
+  "allowPermissions": {
+    "description": "Label for the button to allow permissions for the application.",
+    "message": "Allow permissions"
+  },
+  "autoScroll": {
+    "description": "Label for the switch to control whether to automatically scroll to each item while scraping.",
+    "message": "Autoscroll"
+  },
+  "back": {
+    "description": "Label for the button to go back to the previous screen.",
+    "message": "Back"
+  },
+  "cancel": {
+    "description": "Label for the cancel action.",
+    "message": "Cancel"
+  },
+  "changeList": {
+    "description": "Label for the button to change the list to scrape.",
+    "message": "Change List"
+  },
+  "changeSelectionLevel": {
+    "description": "Description of the action to change the selection level when selecting an element.",
+    "message": "Change selection level"
+  },
+  "chooseFile": {
+    "description": "Label for the button to choose a file to upload.",
+    "message": "Choose File"
+  },
+  "click": {
+    "description": "Label for the click action.",
+    "message": "Click"
+  },
+  "clickLoadMore": {
+    "description": "Label for the option to click a button to load more items on the same page when scraping.",
+    "message": "Click button to load more items on same page"
+  },
+  "clickNextPage": {
+    "description": "Label for the option to click a link to navigate to the next page to load more items when scraping.",
+    "message": "Click link to navigate to next page"
+  },
+  "column": {
+    "description": "Label for the select element to select the column containing URLs to scrape from the uploaded CSV.",
+    "message": "Column"
+  },
+  "confirm": {
+    "description": "Label for the confirm action.",
+    "message": "Confirm"
+  },
+  "continue": {
+    "description": "Label for the button to continue to the next screen.",
+    "message": "Continue"
+  },
+  "copy": {
+    "description": "Label for the button to copy the data to the clipboard.",
+    "message": "Copy"
+  },
+  "csvFile": {
+    "description": "Label for the file input to upload a CSV file",
+    "message": "CSV file"
+  },
+  "defaultScraperName": {
+    "description": "Default name for a details pages scraper.",
+    "message": "Scrape details from $DOMAIN$",
+    "placeholders": {
+      "domain": {
+        "content": "$1",
+        "example": "example.com"
+      }
+    }
+  },
+  "delete": {
+    "description": "Label for the menu item to delete the scraper.",
+    "message": "Delete"
+  },
+  "dismiss": {
+    "description": "Action to dismiss the alert.",
+    "message": "Dismiss"
+  },
+  "duration": {
+    "description": "Label to show the duration of the current scrape.",
+    "message": "Duration"
+  },
+  "esc": {
+    "description": "Label for the Escape key.",
+    "message": "Esc"
+  },
+  "export": {
+    "description": "Label for the menu item to export the scraper.",
+    "message": "Export"
+  },
+  "extractData": {
+    "description": "Label for the menu item to run the scrape and extract data from each URL.",
+    "message": "Extract data"
+  },
+  "finish": {
+    "description": "Label for the button to finish selecting elements on the page.",
+    "message": "Finish"
+  },
+  "headerRow": {
+    "description": "Help text to explain that the uploaded CSV file must start with a header row.",
+    "message": "Must start with a header row"
+  },
+  "headerRowRequired": {
+    "description": "Warning to show when header row appears to be missing from the uploaded CSV.",
+    "message": "Header row required"
+  },
+  "help": {
+    "description": "Label for the button to open the help page.",
+    "message": "Help"
+  },
+  "hideOptions": {
+    "description": "Label for the button to hide more options for scraping.",
+    "message": "Hide Options"
+  },
+  "import": {
+    "description": "Label for the menu item to import a scraper.",
+    "message": "Import"
+  },
+  "install": {
+    "description": "Label for the button to install the latest version of the application.",
+    "message": "Install latest version"
+  },
+  "invalidTab": {
+    "description": "Error message when target tab is open to a restricted site.",
+    "message": "This page is restricted. Try another site."
+  },
+  "invalidVersion": {
+    "description": "Instruct the user to install the latest version of the application.",
+    "message": "$APP_NAME$ is out of beta! Install the latest version to get the newest updates.",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "Easy Scraper"
+      }
+    }
+  },
+  "items": {
+    "description": "Label to show the number of items scraped when scraping a list.",
+    "message": "Items"
+  },
+  "loadMoreAction": {
+    "description": "Label for the select element to select how to load more items when scraping.",
+    "message": "Action to load more items"
+  },
+  "max": {
+    "description": "Label for the input to control the maximum time to wait when loading more items or pages.",
+    "message": "Max"
+  },
+  "maxItems": {
+    "description": "Label for the input to set a maximum limit on the number of items to scrape.",
+    "message": "Max items"
+  },
+  "maxItemsHelp": {
+    "description": "Help text to inform the user that they should leave the max items input blank to not set a limit.",
+    "message": "Leave blank for no limit"
+  },
+  "maxItemsReached": {
+    "description": "Alert description to indicate that the maximum limit on the number of items to scrape has been reached.",
+    "message": "Successfully scraped up to the specified limit. Increase the max items option to continue scraping."
+  },
+  "mediaUrl": {
+    "description": "Label for the media URL field captured from an element.",
+    "message": "Media URL"
+  },
+  "min": {
+    "description": "Label for the input to control the minimum time to wait when loading more items or pages.",
+    "message": "Min"
+  },
+  "missingTabError": {
+    "description": "Error message when unable to access target tab data.",
+    "message": "The tab you were using for this task has been closed. Please close this window and try again."
+  },
+  "missingTabPermission": {
+    "description": "Error message when unable to access target tab data.",
+    "message": "Unable to access tab. Close this window and try again."
+  },
+  "missingUrlColumn": {
+    "description": "Error message when the CSV file is missing columns with URLs.",
+    "message": "Unable to find column with URLs. Please select another file."
+  },
+  "newScraper": {
+    "description": "Label for the button to create a new scraper.",
+    "message": "New Scraper"
+  },
+  "noData": {
+    "description": "Placeholder in table when there is no data to show.",
+    "message": "No data to show"
+  },
+  "noFileChosen": {
+    "description": "Message shown when no file has been chosen.",
+    "message": "No file chosen"
+  },
+  "noList": {
+    "description": "Placeholder to show when list cannot be found on page.",
+    "message": "Unable to find list on page"
+  },
+  "none": {
+    "description": "Label for the option to not load more items when scraping.",
+    "message": "None"
+  },
+  "options": {
+    "description": "Label for the button to show options for the scraper.",
+    "message": "Options"
+  },
+  "pages": {
+    "description": "Label to show the number of pages scraped when scraping a list.",
+    "message": "Pages"
+  },
+  "permissionsDescription": {
+    "description": "Help text for explaining that the application needs additional permissions to access and scrape URLs.",
+    "message": "$APP_NAME$ needs additional permissions to access and scrape URLs",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "Easy Scraper"
+      }
+    }
+  },
+  "preview": {
+    "description": "Badge text to indicate that the data shown is a preview of the scraper.",
+    "message": "Preview"
+  },
+  "remainingPages": {
+    "description": "Label to show the number of pages remaining to be scraped when scraping details pages.",
+    "message": "Remaining"
+  },
+  "rename": {
+    "description": "Label for the menu item to rename the scraper.",
+    "message": "Rename"
+  },
+  "reviewDescription": {
+    "description": "Ask the user to leave a review for the application.",
+    "message": "Hi, I'm $NAME$. I created $APP_NAME$ to help people save time. If you enjoy using it, I'd appreciate a 5-star rating to help others discover $APP_NAME$. Thanks so much!",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "Easy Scraper"
+      },
+      "name": {
+        "content": "Namu"
+      }
+    }
+  },
+  "reviewTitle": {
+    "description": "Thank the user for using the application.",
+    "message": "Thanks for using $APP_NAME$",
+    "placeholders": {
+      "app_name": {
+        "content": "$1",
+        "example": "Easy Scraper"
+      }
+    }
+  },
+  "scrapeDetails": {
+    "description": "Label for the option to show the screen for scraping details pages for each item in a list.",
+    "message": "Scrape Details"
+  },
+  "scrapeDetailsTipDescription": {
+    "description": "Description for the tip to educate the user about scraping details pages.",
+    "message": "To scrape each URL in the list, select \"$LABEL$\" from the menu in the top right corner after downloading the list as a CSV file.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "Scrape Details"
+      }
+    }
+  },
+  "scrapeDetailsTipTitle": {
+    "description": "Title for the tip to educate the user about scraping details pages.",
+    "message": "Tip: Scraping details pages"
+  },
+  "scrapeList": {
+    "description": "Label for the option to show the screen for scraping a list.",
+    "message": "Scrape List"
+  },
+  "scrapedPages": {
+    "description": "Label to show the number of pages scraped when scraping details pages.",
+    "message": "Scraped"
+  },
+  "scrapingComplete": {
+    "description": "Alert heading to indicate that scraping has completed.",
+    "message": "Scraping complete"
+  },
+  "scrapingStatus": {
+    "description": "Label to indicate that scraping is in progress.",
+    "message": "Scraping..."
+  },
+  "scrollDelay": {
+    "description": "Label for the input to control how long to wait in milliseconds when scrolling to each item while scraping.",
+    "message": "Scroll delay (ms)"
+  },
+  "scrollDown": {
+    "description": "Label for the option to scroll down to load more items when scraping.",
+    "message": "Scroll down to load more items"
+  },
+  "select": {
+    "description": "Label for the button to select an element on the page.",
+    "message": "Select"
+  },
+  "selectElement": {
+    "description": "Title to display when selecting an element.",
+    "message": "Select Element"
+  },
+  "selectField": {
+    "description": "Description of the action to select the field to capture.",
+    "message": "Select field"
+  },
+  "selectList": {
+    "description": "Title to display when selecting a list.",
+    "message": "Select List"
+  },
+  "selectScraper": {
+    "description": "Label for the menu item to select a scraper to use to scrape each URL.",
+    "message": "Select scraper"
+  },
+  "selectScraperOption": {
+    "description": "Instruction to select a scraper for the current domain.",
+    "message": "Select scraper for $DOMAIN$",
+    "placeholders": {
+      "domain": {
+        "content": "$1",
+        "example": "example.com"
+      }
+    }
+  },
+  "showOptions": {
+    "description": "Label for the button to show more options for scraping.",
+    "message": "Show Options"
+  },
+  "startScraping": {
+    "description": "Label for the button to start scraping.",
+    "message": "Start Scraping"
+  },
+  "stopScraping": {
+    "description": "Label for the button to stop scraping.",
+    "message": "Stop Scraping"
+  },
+  "tabNotFound": {
+    "description": "Error message when target tab does not exist.",
+    "message": "No tab found. Close this window and try again."
+  },
+  "testUrl": {
+    "description": "Label for the text input for the test URL to use when selecting a scraper.",
+    "message": "Test URL"
+  },
+  "text": {
+    "description": "Label for the text field captured from an element.",
+    "message": "Text"
+  },
+  "uploadUrls": {
+    "description": "Label for the menu item to upload a file with URLs to scrape.",
+    "message": "Upload URLs"
+  },
+  "url": {
+    "description": "Label for the URL field captured from an element.",
+    "message": "URL"
+  },
+  "urlFieldWarning": {
+    "description": "Warning to display when the selected column name is a URL and the CSV file may be missing a header row.",
+    "message": "Column name appears to be a URL. Please ensure the CSV file starts with a header row containing the names of the columns."
+  },
+  "verify": {
+    "description": "Label for the button to verify a selected element by highlighting it on the page.",
+    "message": "Verify"
+  },
+  "waitTimeItems": {
+    "description": "Label for the inputs to control how long to wait in seconds when loading more items.",
+    "message": "Wait time for loading more items (seconds)"
+  },
+  "waitTimePages": {
+    "description": "Label for the inputs to control how long to wait in seconds when loading pages.",
+    "message": "Wait time for loading pages (seconds)"
+  }
+}

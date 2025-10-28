@@ -1,0 +1,390 @@
+import React, { useState, useEffect } from 'react';
+import { ScraperList } from './components/ScraperList';
+import { ScraperForm } from './components/ScraperForm';
+import { DataTable } from './components/DataTable';
+import { LoadingSpinner } from './components/LoadingSpinner';
+import { ErrorMessage } from './components/ErrorMessage';
+import { useScrapers } from './hooks/useScrapers';
+import { useCurrentTab } from './hooks/useCurrentTab';
+import './styles.css';
+
+function App() {
+  const [currentView, setCurrentView] = useState('list'); // 'list', 'form', 'table', 'selectList'
+  const [selectedScraper, setSelectedScraper] = useState(null);
+  const [scrapedData, setScrapedData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [listOptions, setListOptions] = useState([]);
+  const [selectedListSelector, setSelectedListSelector] = useState(null);
+  
+  const { scrapers, addScraper, updateScraper, deleteScraper } = useScrapers();
+  const { currentTab, isValidTab } = useCurrentTab();
+
+  // 检查当前标签页是否有效
+  useEffect(() => {
+    if (!isValidTab) {
+      setError('此页面受限，请尝试其他网站。');
+    } else {
+      setError(null);
+    }
+  }, [isValidTab]);
+
+  // 监听从 content script 返回的容器选择消息
+  useEffect(() => {
+    const messageListener = (message, sender, sendResponse) => {
+      if (message.action === 'containerSelected') {
+        handleContainerSelected(message.selector);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(messageListener);
+    
+    // 同时监听 storage 变化（作为备用方案）
+    const storageListener = (changes) => {
+      if (changes.selectedContainer && currentView === 'selectList') {
+        handleContainerSelected(changes.selectedContainer.newValue);
+      }
+    };
+    chrome.storage.onChanged.addListener(storageListener);
+    
+    return () => {
+      chrome.runtime.onMessage.removeListener(messageListener);
+      chrome.storage.onChanged.removeListener(storageListener);
+    };
+  }, [currentTab, selectedScraper, currentView]);
+
+  const handleContainerSelected = async (selector) => {
+    setIsLoading(true);
+    
+    // 使用选中的 selector 开始抓取
+    chrome.tabs.sendMessage(currentTab.id, {
+      action: 'startScraping',
+      scraper: selectedScraper,
+      selector: selector
+    }).then(response => {
+      if (response && response.success) {
+        setScrapedData(response.data);
+        setCurrentView('table');
+      } else {
+        setError(response?.error || '抓取失败');
+      }
+    }).catch(err => {
+      console.error('Scraping error:', err);
+      setError('无法与页面通信，请刷新页面后重试。');
+    }).finally(() => {
+      setIsLoading(false);
+    });
+    
+    // 清除 storage 中的 selector
+    chrome.storage.local.remove('selectedContainer');
+  };
+
+  const handleNewScraper = () => {
+    setSelectedScraper(null);
+    setCurrentView('form');
+  };
+
+  const handleEditScraper = (scraper) => {
+    setSelectedScraper(scraper);
+    setCurrentView('form');
+  };
+
+  const handleScraperSaved = (scraper) => {
+    if (selectedScraper) {
+      updateScraper(scraper);
+    } else {
+      addScraper(scraper);
+    }
+    setCurrentView('list');
+  };
+
+  const handleStartScraping = async (scraper) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // 方法1: 先通过 background 触发注入，再直接发送消息
+      try {
+        // 尝试先注入 script
+        await chrome.scripting.executeScript({
+          target: { tabId: currentTab.id },
+          files: ['content-script.bundle.js']
+        });
+        console.log('Content script injected successfully');
+      } catch (injectError) {
+        console.log('Script may already be injected, continuing...');
+      }
+      
+      // 等待一小段时间确保 script 加载
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // 1. 先获取页面上所有可能的列表选项
+      const optionsResponse = await chrome.tabs.sendMessage(currentTab.id, {
+        action: 'getListOptions'
+      });
+
+      if (optionsResponse && optionsResponse.options && optionsResponse.options.length > 1) {
+        // 如果找到多个列表，在弹窗中显示选择界面
+        setListOptions(optionsResponse.options);
+        setSelectedScraper(scraper);
+        setCurrentView('selectList');
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. 只有一个或没有选项，直接开始抓取（使用默认容器）
+      const selector = optionsResponse?.options?.[0]?.selector || null;
+      
+      // 发送消息到 content script
+      const response = await chrome.tabs.sendMessage(currentTab.id, {
+        action: 'startScraping',
+        scraper: scraper,
+        selector: selector
+      });
+
+      if (response && response.success) {
+        setScrapedData(response.data);
+        setCurrentView('table');
+      } else {
+        setError(response?.error || '抓取失败');
+      }
+    } catch (err) {
+      console.error('Scraping error:', err);
+      setError('无法与页面通信，请刷新页面后重试。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackToList = () => {
+    setCurrentView('list');
+    setScrapedData([]);
+    setError(null);
+  };
+
+  const handleSwitchContainer = async () => {
+    try {
+      // 获取页面上所有可能的列表选项
+      const optionsResponse = await chrome.tabs.sendMessage(currentTab.id, {
+        action: 'getListOptions'
+      });
+
+      if (optionsResponse && optionsResponse.options && optionsResponse.options.length > 1) {
+        // 如果有多个容器，显示选择界面
+        setListOptions(optionsResponse.options);
+        setCurrentView('selectList');
+      } else {
+        // 如果只有一个容器，直接显示没有其他选择
+        alert('页面上只有一个容器，无法切换。');
+      }
+    } catch (err) {
+      console.error('Switch container error:', err);
+      alert('无法获取容器列表，请刷新页面后重试。');
+    }
+  };
+
+  const handleBackToForm = () => {
+    setCurrentView('form');
+  };
+
+  const handleListSelected = async (selector) => {
+    setIsLoading(true);
+    setError(null);
+    setSelectedListSelector(selector);
+
+    try {
+      // 发送消息到 content script，使用选中的选择器
+      const response = await chrome.tabs.sendMessage(currentTab.id, {
+        action: 'startScraping',
+        scraper: selectedScraper,
+        selector: selector
+      });
+
+      if (response && response.success) {
+        setScrapedData(response.data);
+        setCurrentView('table');
+      } else {
+        setError(response?.error || '抓取失败');
+      }
+    } catch (err) {
+      console.error('Scraping error:', err);
+      setError('无法与页面通信，请刷新页面后重试。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="app">
+        <div className="header">
+          <h1>数据猎手专业版</h1>
+        </div>
+        <LoadingSpinner message="正在抓取数据..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="app">
+        <div className="header">
+          <h1>数据猎手专业版</h1>
+        </div>
+        <ErrorMessage message={error} onRetry={() => setError(null)} />
+      </div>
+    );
+  }
+
+  const handleClose = () => {
+    window.close();
+  };
+
+  return (
+    <div className="app">
+      <div className="header">
+        <h1>数据猎手专业版</h1>
+        <div className="header-buttons">
+          {currentView !== 'list' && (
+            <button 
+              className="back-button"
+              onClick={currentView === 'form' ? handleBackToList : handleBackToForm}
+            >
+              ← 返回
+            </button>
+          )}
+          <button 
+            className="close-button"
+            onClick={handleClose}
+            title="关闭"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="content">
+        {currentView === 'list' && (
+          <ScraperList
+            scrapers={scrapers}
+            onNewScraper={handleNewScraper}
+            onEditScraper={handleEditScraper}
+            onDeleteScraper={deleteScraper}
+            onStartScraping={handleStartScraping}
+            currentTab={currentTab}
+          />
+        )}
+
+        {currentView === 'form' && (
+          <ScraperForm
+            scraper={selectedScraper}
+            onSave={handleScraperSaved}
+            onCancel={handleBackToList}
+            currentTab={currentTab}
+          />
+        )}
+
+        {currentView === 'table' && (
+          <DataTable
+            data={scrapedData}
+            scraper={selectedScraper}
+            onBack={handleBackToList}
+            onSwitchContainer={handleSwitchContainer}
+          />
+        )}
+
+        {currentView === 'selectList' && (
+          <div>
+            <div className="card">
+              <h3>请选择要抓取的列表</h3>
+              <p style={{ fontSize: '12px', color: '#6c757d', marginBottom: '16px' }}>
+                检测到页面上有 {listOptions.length} 个可能的列表，请选择要抓取的内容：
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {listOptions.map((option, index) => (
+                  <div
+                    key={index}
+                    className="card"
+                    style={{
+                      textAlign: 'left',
+                      padding: '12px',
+                      border: option.iframeUrl ? '2px solid #ffc107' : '1px solid #e9ecef',
+                      borderRadius: '6px',
+                      background: 'white'
+                    }}
+                  >
+                    <div style={{ fontWeight: '600', marginBottom: '4px', color: '#495057' }}>
+                      {option.type} {option.itemCount >= 0 ? `- ${option.itemCount} 项` : ''}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '4px' }}>
+                      {option.preview}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#adb5bd', fontFamily: 'monospace', marginBottom: '8px' }}>
+                      {option.selector}
+                    </div>
+                    
+                    {option.iframeUrl && (
+                      <div style={{ 
+                        background: '#fff3cd', 
+                        border: '1px solid #ffc107', 
+                        borderRadius: '4px', 
+                        padding: '8px',
+                        marginTop: '8px'
+                      }}>
+                        <div style={{ fontSize: '12px', color: '#856404', marginBottom: '4px' }}>
+                          ⚠️ 此数据在框架内（跨域），无法直接抓取
+                        </div>
+                        <button
+                          onClick={() => window.open(option.iframeUrl, '_blank')}
+                          style={{
+                            padding: '6px 12px',
+                            background: '#667eea',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          🔗 在新标签页打开（推荐）
+                        </button>
+                      </div>
+                    )}
+                    
+                    {!option.iframeUrl && (
+                      <button
+                        onClick={() => handleListSelected(option.selector)}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          background: '#667eea',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        抓取此列表
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button className="btn btn-secondary" onClick={handleBackToList}>
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
