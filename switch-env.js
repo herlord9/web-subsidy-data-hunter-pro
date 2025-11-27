@@ -66,9 +66,9 @@ if (args.length === 0) {
   console.log('用法: node switch-env.js [test|dev|prod]');
   console.log('');
   console.log('可用环境:');
-  console.log('  test - 测试环境 (http://test.agrolinking.cn:8000)');
-  console.log('  dev  - 开发环境 (http://localhost:8000)');
-  console.log('  prod - 生产环境 (https://api.agrolinking.cn)');
+  console.log('  test - 测试环境 (https://test-api.example.com)');
+  console.log('  dev  - 开发环境 (http://localhost:8101)');
+  console.log('  prod - 生产环境 (https://api.example.com)');
   process.exit(0);
 }
 

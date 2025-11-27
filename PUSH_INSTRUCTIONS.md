@@ -1,58 +1,75 @@
-# GitLab 提交说明
+# GitHub 提交说明
 
-## 当前状态
-✅ 本地仓库已初始化
-✅ 代码已提交（39 个文件）
-✅ 远程仓库已配置：http://gitlab.agrolinking.cn/agri_sub/agri-sub-plugin.git
+## 📋 快速开始
 
-## 推送前需要做的事情
+详细的初始化步骤请查看 [GITHUB_SETUP.md](./GITHUB_SETUP.md)
 
-### 方案一：联系管理员解除保护（推荐）
-1. 联系 GitLab 仓库管理员 btn
-2. 请求添加你的账号为 Maintainer，或临时解除分支保护
-3. 等待批准后执行：
+## 🚀 快速推送步骤
+
+### 1. 在 GitHub 上创建仓库
+
+访问 https://github.com/new 创建新仓库（不要初始化 README）
+
+### 2. 初始化本地仓库（如果还没初始化）
+
 ```bash
-cd easy-scraper-clone
+cd e:\bbb-test\data-hunter-pro
+
+# 如果还没初始化
+git init
+git add .
+git commit -m "Initial commit: Data Hunter Pro"
+git branch -M main
+```
+
+### 3. 连接远程仓库并推送
+
+#### 使用 HTTPS（需要 Personal Access Token）
+
+```bash
+# 添加远程仓库（替换 YOUR_USERNAME 为你的 GitHub 用户名）
+# 仓库名称固定为 web-subsidy-data-hunter-pro
+git remote add origin https://github.com/YOUR_USERNAME/web-subsidy-data-hunter-pro.git
+
+# 推送代码
 git push -u origin main
 ```
 
-### 方案二：在 GitLab Web 界面操作
-1. 访问 http://gitlab.agrolinking.cn/agri_sub/agri-sub-plugin
-2. 点击左侧菜单 "Repository" → "Files"
-3. 点击 "Upload file" 或使用 Web IDE
-4. 手动上传所有文件
+**注意**：推送时会要求输入用户名和密码，密码处需要输入 [Personal Access Token](https://github.com/settings/tokens)
 
-### 方案三：使用 SSH 认证（如果有权限）
-1. 配置 SSH 密钥到 GitLab
-2. 使用 SSH 地址：
+#### 使用 SSH（推荐，如果你已配置 SSH key）
+
 ```bash
-git remote set-url origin git@gitlab.agrolinking.cn:agri_sub/agri-sub-plugin.git
+# 添加远程仓库（替换 YOUR_USERNAME 为你的 GitHub 用户名）
+# 仓库名称固定为 web-subsidy-data-hunter-pro
+git remote add origin git@github.com:YOUR_USERNAME/web-subsidy-data-hunter-pro.git
+
+# 推送代码
 git push -u origin main
 ```
 
-## 已提交的文件列表
+**提示**：如果你已经在 GitHub 上配置了 SSH key，直接使用此方式，无需输入密码。
 
-- ✅ .gitignore
-- ✅ .gitlab-ci.yml
-- ✅ LICENSE
-- ✅ README.md
-- ✅ package.json
-- ✅ webpack.config.js
-- ✅ src/ 目录下所有源代码
-- ✅ 所有文档和配置文件
+## 📝 需要的信息
 
-## 当前分支
-```
-* feature/initial-commit
-  dev
-  main
-```
+在开始之前，你需要：
 
-## 下一步
-一旦管理员解除保护或给予权限，运行：
+1. ✅ **GitHub 账号** - 已注册 GitHub
+2. ✅ **仓库名称** - **固定为 `web-subsidy-data-hunter-pro`**（必须使用此名称）
+3. ✅ **认证方式**：
+   - **SSH**（推荐）：如果你已配置 SSH key，直接使用此方式
+   - **HTTPS**（备选）：需要创建 [Personal Access Token](https://github.com/settings/tokens)
+
+## 🔄 后续更新
+
 ```bash
-cd easy-scraper-clone
-git checkout main
-git push -u origin main
+git add .
+git commit -m "描述你的修改"
+git push
 ```
+
+## 📚 详细文档
+
+完整的初始化指南请查看：[GITHUB_SETUP.md](./GITHUB_SETUP.md)
+
 

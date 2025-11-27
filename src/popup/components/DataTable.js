@@ -54,7 +54,12 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
     setLocationInput('');
     
     // 尝试从第一条数据的 href 推断地区
+    console.log('🔍 开始地区推断流程');
+    console.log('📊 导出数据条数:', exportData.length);
+    console.log('🔗 第一条数据:', exportData[0]);
+    
     if (exportData.length > 0 && exportData[0].href) {
+      console.log('✅ 检测到 href，开始推断地区');
       setIsInferringRegion(true);
       
       try {
@@ -62,20 +67,47 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
         const token = storage.accessToken;
         const apiUrl = storage.apiUrl;
         
+        console.log('🔑 存储信息检查:');
+        console.log('  - accessToken:', token ? `${token.substring(0, 20)}...` : '❌ 未找到');
+        console.log('  - apiUrl:', apiUrl || '❌ 未找到');
+        
         if (token && apiUrl) {
-          // 从完整 URL 中提取域名
+          // 优先使用完整 URL，如果后端无法识别，再尝试域名
+          let urlToSend = exportData[0].href;
           let domain = '';
+          
           try {
             const urlObj = new URL(exportData[0].href);
-            domain = urlObj.hostname; // 提取域名，如 www.yichang.gov.cn
+            domain = urlObj.hostname; // 提取域名，如 www.yichang.gov.cn 或 public.xinmi.gov.cn
+            
+            // 去掉 public. 前缀（如果存在）
+            if (domain.startsWith('public.')) {
+              domain = domain.replace(/^public\./, '');
+              console.log('🌐 去掉 public. 前缀后的域名:', domain);
+            } else {
+              console.log('🌐 提取的域名:', domain);
+            }
+            console.log('🔗 完整 URL:', exportData[0].href);
+            
+            // 尝试先使用完整 URL，如果后端需要域名，可以修改这里
+            // 有些后端可能能更好地从完整 URL 中提取信息
+            urlToSend = exportData[0].href;
           } catch (e) {
-            console.error('URL 解析失败:', e);
-            domain = exportData[0].href; // 降级使用完整 URL
+            console.error('❌ URL 解析失败:', e, '原始 href:', exportData[0].href);
+            urlToSend = exportData[0].href; // 降级使用原始 URL
+            domain = exportData[0].href;
+            // 也尝试去掉 public. 前缀
+            if (domain.startsWith('public.')) {
+              domain = domain.replace(/^public\./, '');
+            }
           }
           
-          const requestUrl = `${apiUrl}/api/chrome-data/infer-region?url=${encodeURIComponent(domain)}`;
-          console.log('🔍 发送地区推断请求:', requestUrl);
-          console.log('📡 Token:', token ? `${token.substring(0, 20)}...` : 'null');
+          // 先尝试完整 URL
+          const requestUrl = `${apiUrl}/api/chrome-data/infer-region?url=${encodeURIComponent(urlToSend)}`;
+          console.log('📡 发送地区推断请求:');
+          console.log('  - 请求 URL:', requestUrl);
+          console.log('  - 发送的参数:', urlToSend);
+          console.log('  - Token:', token ? `${token.substring(0, 20)}...` : 'null');
           
           const response = await fetch(requestUrl, {
             headers: {
@@ -83,7 +115,7 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
             }
           });
           
-          console.log('📥 响应状态:', response.status, response.statusText);
+          console.log('📥 API 响应状态:', response.status, response.statusText);
           
           if (response.ok) {
             const result = await response.json();
@@ -101,6 +133,8 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
                 if (result.city) locationParts.push(result.city);
                 if (result.county) locationParts.push(result.county);
                 const location = locationParts.join(' > ');
+                
+                console.log('📍 构建的 location:', location);
                 
                 // 为每条数据添加 location
                 const enrichedData = exportData.map(item => ({
@@ -120,23 +154,64 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
                 setShowLocationInput(true);
               }
             } else {
-              // 推断不完整，显示弹框让用户手动选择
-              console.log('⚠️ 自动识别失败，显示弹框:', result);
-              setShowLocationInput(true);
+              // 推断不完整，尝试从域名中推断（降级策略）
+              console.log('⚠️ 自动识别失败（无省份），尝试从域名推断:', result);
+              
+              // 尝试从域名中提取地区信息
+              let inferredRegion = null;
+              if (domain) {
+                // 常见的地名映射（可以根据实际情况扩展）
+                const regionMap = {
+                  'xinmi': { province: '河南省', city: '郑州市', county: '新密市' },
+                  'gongyishi': { province: '河南省', city: '焦作市', county: '巩义市' },
+                  'yanshi': { province: '河南省', city: '洛阳市', county: '偃师区' },
+                  // 可以添加更多映射
+                };
+                
+                // 检查域名中是否包含已知的地名
+                for (const [key, region] of Object.entries(regionMap)) {
+                  if (domain.includes(key)) {
+                    inferredRegion = region;
+                    console.log(`🔍 从域名推断出地区: ${key} -> ${region.county}`);
+                    break;
+                  }
+                }
+              }
+              
+              if (inferredRegion) {
+                // 如果从域名推断成功，显示弹框并预填
+                console.log('✅ 从域名推断成功，预填地区信息');
+                if (inferredRegion.province) setSelectedProvince(inferredRegion.province);
+                if (inferredRegion.city) setSelectedCity(inferredRegion.city);
+                if (inferredRegion.county) setSelectedDistrict(inferredRegion.county);
+                setShowLocationInput(true);
+              } else {
+                // 无法推断，显示弹框让用户手动选择
+                console.log('⚠️ 无法从域名推断，显示弹框让用户手动选择');
+                setShowLocationInput(true);
+              }
             }
           } else {
             // API 调用失败，显示弹框
             console.error('❌ API 调用失败:', response.status, response.statusText);
-            const errorText = await response.text();
-            console.error('错误详情:', errorText);
+            try {
+              const errorText = await response.text();
+              console.error('❌ 错误详情:', errorText);
+            } catch (e) {
+              console.error('❌ 无法读取错误详情:', e);
+            }
             setShowLocationInput(true);
           }
         } else {
           // 没有登录信息，显示弹框
+          console.warn('⚠️ 缺少登录信息，无法调用推断接口');
+          console.warn('  - token:', token ? '存在' : '❌ 缺失');
+          console.warn('  - apiUrl:', apiUrl ? '存在' : '❌ 缺失');
           setShowLocationInput(true);
         }
       } catch (error) {
-        console.error('推断地区失败:', error);
+        console.error('❌ 推断地区失败（异常）:', error);
+        console.error('❌ 错误堆栈:', error.stack);
         // 推断失败，显示弹框让用户手动选择
         setShowLocationInput(true);
       } finally {
@@ -144,6 +219,10 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
       }
     } else {
       // 没有 href，显示弹框
+      console.warn('⚠️ 没有 href 数据，无法推断地区');
+      console.warn('  - exportData.length:', exportData.length);
+      console.warn('  - exportData[0]:', exportData[0]);
+      console.warn('  - exportData[0]?.href:', exportData[0]?.href);
       setShowLocationInput(true);
     }
   };
@@ -204,6 +283,170 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
     await executeExport(enrichedData, exportType);
   };
 
+  // 导出 Playwright 配置
+  const handleExportPlaywrightConfig = async () => {
+    try {
+      // 获取当前页面 URL
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const currentUrl = tabs[0]?.url || '';
+      const domain = currentUrl ? new URL(currentUrl).hostname : '';
+      
+      // 分析数据结构，自动推断字段选择器
+      const sampleData = data[0] || {};
+      const fields = {};
+      
+      Object.keys(sampleData).forEach(key => {
+        if (key === 'title') fields.title = 'a[href], h3, h4';
+        else if (key === 'href') fields.link = 'a[href]';
+        else if (key === 'date') fields.date = '.date, .time, [class*="date"]';
+        else fields[key] = `.${key}`;
+      });
+      
+      // 生成配置对象
+      const playwrightConfig = {
+        // 网站信息
+        website: domain,
+        websiteName: domain.split('.')[0] || 'unknown',
+        url: currentUrl,
+        urlPattern: currentUrl.replace(/[?&]page=\d+/, '').replace(/&/g, '\\&'),
+        
+        // 选择器配置
+        selectors: {
+          listContainer: scraper?.selectedContainer || 'auto-detected',
+          listItem: 'li, tr, div[class*="item"]',
+          fields: fields
+        },
+        
+        // 分页配置
+        pagination: {
+          enabled: true,
+          nextButton: 'a:contains("下一页"), a:contains("下一"), .next-page',
+          totalPages: 'span:contains("共"), .total-pages',
+          pageParam: 'page'
+        },
+        
+        // 等待配置
+        waitConfig: {
+          listLoad: 2000,
+          itemDelay: 100,
+          pageDelay: 1000
+        },
+        
+        // 元数据
+        metadata: {
+          testedAt: new Date().toISOString(),
+          itemsFound: data.length,
+          confidence: data.length >= 5 ? 'high' : 'medium',
+          scrapedBy: 'Data Hunter Pro Chrome Extension',
+          version: '1.3.6'
+        },
+        
+        // 示例数据（前3条）
+        sampleData: data.slice(0, 3),
+        
+        // Playwright 代码模板
+        playwrightTemplate: {
+          language: 'python',
+          code: generatePlaywrightCode(domain, fields, data.length)
+        }
+      };
+      
+      // 导出为 JSON
+      const json = JSON.stringify(playwrightConfig, null, 2);
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+      const fileName = `playwright-config-${domain}-${new Date().getTime()}.json`;
+      saveAs(blob, fileName);
+      
+      alert(`✅ Playwright 配置已导出！\n\n文件名: ${fileName}\n\n可直接用于后端 Playwright 脚本开发`);
+      
+    } catch (err) {
+      console.error('导出配置失败:', err);
+      alert('导出配置失败：' + err.message);
+    }
+  };
+  
+  // 生成 Playwright Python 代码模板
+  const generatePlaywrightCode = (domain, fields, itemCount) => {
+    return `"""
+${domain} 网站数据抓取脚本
+由 Data Hunter Pro 自动生成
+测试时间: ${new Date().toISOString()}
+测试结果: ${itemCount} 条数据
+"""
+
+from playwright.sync_api import sync_playwright
+import json
+from datetime import datetime
+
+def scrape_${domain.replace(/\./g, '_')}(url, max_pages=10):
+    """
+    抓取 ${domain} 网站数据
+    
+    Args:
+        url: 搜索页面 URL
+        max_pages: 最大抓取页数
+    
+    Returns:
+        list: 抓取到的数据列表
+    """
+    results = []
+    
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        
+        for page_num in range(1, max_pages + 1):
+            print(f"正在抓取第 {page_num} 页...")
+            
+            # 访问页面
+            page_url = url if page_num == 1 else f"{url}&page={page_num}"
+            page.goto(page_url, wait_until='networkidle')
+            
+            # 等待列表加载
+            page.wait_for_selector('${scraper?.selectedContainer || 'ul, .result-list'}', timeout=5000)
+            
+            # 提取数据
+            items = page.query_selector_all('${scraper?.selectedContainer || 'ul'} li')
+            
+            for item in items:
+                try:
+                    data = {
+${Object.keys(fields).map(key => `                        '${key}': item.query_selector('${fields[key]}').inner_text().strip() if item.query_selector('${fields[key]}') else '',`).join('\n')}
+                    }
+                    results.append(data)
+                except Exception as e:
+                    print(f"提取数据失败: {e}")
+                    continue
+            
+            print(f"第 {page_num} 页完成，共 {len(items)} 条")
+            
+            # 检查是否有下一页
+            next_button = page.query_selector('a:has-text("下一页")')
+            if not next_button or page_num >= max_pages:
+                break
+            
+            # 等待一下避免请求过快
+            page.wait_for_timeout(1000)
+        
+        browser.close()
+    
+    return results
+
+if __name__ == '__main__':
+    # 测试 URL
+    test_url = '${currentUrl}'
+    
+    # 开始抓取
+    data = scrape_${domain.replace(/\./g, '_')}(test_url, max_pages=5)
+    
+    # 保存结果
+    with open('${domain}_data.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    
+    print(f"抓取完成！共 {len(data)} 条数据")
+`;
+  };
+  
   // 确认发送POST请求
   const handleConfirmPost = async () => {
     setShowPostPreview(false);
@@ -400,10 +643,26 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
             );
           }
           
-          // 处理长文本
+          // 特殊处理 title 字段 - 始终显示 tooltip 并添加视觉提示
+          if (field === 'title' && typeof value === 'string') {
+            return (
+              <div 
+                title={value}
+                style={{
+                  cursor: 'help',
+                  borderBottom: '1px dashed #adb5bd',
+                  paddingBottom: '2px'
+                }}
+              >
+                {value.length > 50 ? value.substring(0, 50) + '...' : value}
+              </div>
+            );
+          }
+          
+          // 处理其他长文本
           if (typeof value === 'string' && value.length > 50) {
             return (
-              <div title={value}>
+              <div title={value} style={{ cursor: 'help' }}>
                 {value.substring(0, 50)}...
               </div>
             );
@@ -527,13 +786,28 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
       />
 
       {/* 数据库导出按钮 */}
-      <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+      <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
         <button 
           className="btn btn-success"
           onClick={handleExportToDB}
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
         >
           📊 导出到数据库
+        </button>
+        
+        <button 
+          className="btn"
+          onClick={handleExportPlaywrightConfig}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: 'none'
+          }}
+        >
+          🎭 导出 Playwright 配置
         </button>
       </div>
 
@@ -768,13 +1042,14 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
             flexDirection: 'column',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
           }}>
+            {/* 标题栏 - 固定 */}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '16px',
+              padding: '20px 24px',
               borderBottom: '2px solid #667eea',
-              paddingBottom: '8px'
+              flexShrink: 0
             }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#667eea' }}>
                 📤 POST请求预览
@@ -795,72 +1070,84 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
               </button>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#495057' }}>
-                🔗 请求URL
+            {/* 内容区域 - 可滚动 */}
+            <div style={{
+              padding: '20px 24px',
+              overflowY: 'auto',
+              flexGrow: 1
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#495057' }}>
+                  🔗 请求URL
+                </div>
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all'
+                }}>
+                  {postData.method} {postData.url}
+                </div>
               </div>
-              <div style={{
-                background: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontFamily: 'monospace',
-                wordBreak: 'break-all'
-              }}>
-                {postData.method} {postData.url}
-              </div>
-            </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#495057' }}>
-                📊 待导入数据 (共 {Array.isArray(postData.payload) ? postData.payload.length : postData.payload.data?.length || 0} 条)
-              </div>
-              <div style={{
-                background: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px',
-                border: '1px solid #e9ecef'
-              }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                  <thead>
-                    <tr style={{ background: '#e9ecef', borderBottom: '2px solid #dee2e6' }}>
-                      <th style={{ padding: '8px', textAlign: 'left', fontWeight: '600', position: 'sticky', top: 0, background: '#e9ecef' }}>标题</th>
-                      <th style={{ padding: '8px', textAlign: 'left', fontWeight: '600', position: 'sticky', top: 0, background: '#e9ecef' }}>链接</th>
-                      <th style={{ padding: '8px', textAlign: 'left', fontWeight: '600', position: 'sticky', top: 0, background: '#e9ecef' }}>地理位置</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Array.isArray(postData.payload) && postData.payload.map((item, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
-                        <td style={{ padding: '8px', verticalAlign: 'top' }}>
-                          <div style={{ maxWidth: '200px', wordBreak: 'break-word' }}>
-                            {item.title || '-'}
-                          </div>
-                        </td>
-                        <td style={{ padding: '8px', verticalAlign: 'top' }}>
-                          <div style={{ maxWidth: '250px', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '11px' }}>
-                            {item.href || '-'}
-                          </div>
-                        </td>
-                        <td style={{ padding: '8px', verticalAlign: 'top' }}>
-                          <div style={{ maxWidth: '150px', wordBreak: 'break-word' }}>
-                            {item.location || '-'}
-                          </div>
-                        </td>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#495057' }}>
+                  📊 待导入数据 (共 {Array.isArray(postData.payload) ? postData.payload.length : postData.payload.data?.length || 0} 条)
+                </div>
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  border: '1px solid #e9ecef',
+                  maxHeight: '400px',
+                  overflowY: 'auto'
+                }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                    <thead>
+                      <tr style={{ background: '#e9ecef', borderBottom: '2px solid #dee2e6' }}>
+                        <th style={{ padding: '8px', textAlign: 'left', fontWeight: '600', position: 'sticky', top: 0, background: '#e9ecef' }}>标题</th>
+                        <th style={{ padding: '8px', textAlign: 'left', fontWeight: '600', position: 'sticky', top: 0, background: '#e9ecef' }}>链接</th>
+                        <th style={{ padding: '8px', textAlign: 'left', fontWeight: '600', position: 'sticky', top: 0, background: '#e9ecef' }}>地理位置</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {Array.isArray(postData.payload) && postData.payload.map((item, index) => (
+                        <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
+                          <td style={{ padding: '8px', verticalAlign: 'top' }}>
+                            <div style={{ maxWidth: '200px', wordBreak: 'break-word' }}>
+                              {item.title || '-'}
+                            </div>
+                          </td>
+                          <td style={{ padding: '8px', verticalAlign: 'top' }}>
+                            <div style={{ maxWidth: '250px', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '11px' }}>
+                              {item.href || '-'}
+                            </div>
+                          </td>
+                          <td style={{ padding: '8px', verticalAlign: 'top' }}>
+                            <div style={{ maxWidth: '150px', wordBreak: 'break-word' }}>
+                              {item.location || '-'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
+            {/* 按钮区域 - 固定在底部 */}
             <div style={{
               display: 'flex',
               gap: '12px',
               justifyContent: 'flex-end',
-              marginTop: '20px',
-              paddingTop: '16px',
-              borderTop: '1px solid #e9ecef'
+              padding: '16px 24px',
+              borderTop: '2px solid #e9ecef',
+              background: 'white',
+              borderRadius: '0 0 12px 12px',
+              flexShrink: 0
             }}>
               <button
                 onClick={() => setShowPostPreview(false)}

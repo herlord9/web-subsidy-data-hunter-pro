@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { API_CONFIG, getCurrentEnvName } from '../../config/api';
 
 export function Login({ onLoginSuccess, sessionExpired }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('your-password');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 

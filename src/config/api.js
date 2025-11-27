@@ -19,8 +19,8 @@ const CURRENT_ENV = ENV.TEST; // 默认使用测试环境
 // API 基础地址配置
 const API_BASE_URLS = {
   [ENV.DEVELOPMENT]: 'http://localhost:8101',
-  [ENV.TEST]: 'https://test-subapi.agrolinking.cn',  // 测试环境地址
-  [ENV.PRODUCTION]: 'https://api.agrolinking.cn'   // 生产环境地址
+  [ENV.TEST]: 'https://test-api.example.com',  // 测试环境地址
+  [ENV.PRODUCTION]: 'https://api.example.com'   // 生产环境地址
 };
 
 // 导出当前环境的 API 配置

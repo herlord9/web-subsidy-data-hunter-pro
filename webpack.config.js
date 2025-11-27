@@ -62,6 +62,10 @@ module.exports = (env, argv) => {
           {
             from: 'src/_locales',
             to: '_locales'
+          },
+          {
+            from: 'src/data/keywords.json',
+            to: 'data/keywords.json'
           }
         ]
       }),

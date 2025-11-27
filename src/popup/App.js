@@ -228,6 +228,29 @@ function App() {
     setScrapedData([]);
   };
 
+  // 处理添加搜索关键词选择器
+  const handleAddSearchKeywordHelper = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await chrome.tabs.sendMessage(currentTab.id, {
+        action: 'addSearchKeywordHelper'
+      });
+
+      if (response && response.success) {
+        alert(`✅ ${response.message}\n\n找到 ${response.count} 个搜索框`);
+      } else {
+        setError(response?.error || '添加关键词选择器失败');
+      }
+    } catch (err) {
+      console.error('添加关键词选择器错误:', err);
+      setError('无法与页面通信，请刷新页面后重试。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 如果正在检查登录状态
   if (authLoading) {
     return (
@@ -332,14 +355,51 @@ function App() {
 
       <div className="content">
         {currentView === 'list' && (
-          <ScraperList
-            scrapers={scrapers}
-            onNewScraper={handleNewScraper}
-            onEditScraper={handleEditScraper}
-            onDeleteScraper={deleteScraper}
-            onStartScraping={handleStartScraping}
-            currentTab={currentTab}
-          />
+          <>
+            <div style={{ marginBottom: '12px', padding: '12px', background: '#f8f9fa', borderRadius: '6px' }}>
+              <button
+                onClick={handleAddSearchKeywordHelper}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.02)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>🔍</span>
+                识别搜索框并添加关键词快捷选择
+              </button>
+              <div style={{ marginTop: '8px', fontSize: '11px', color: '#6c757d', textAlign: 'center' }}>
+                点击后会在页面的搜索框上方添加快捷关键词按钮，刷新页面后失效
+              </div>
+            </div>
+            <ScraperList
+              scrapers={scrapers}
+              onNewScraper={handleNewScraper}
+              onEditScraper={handleEditScraper}
+              onDeleteScraper={deleteScraper}
+              onStartScraping={handleStartScraping}
+              currentTab={currentTab}
+            />
+          </>
         )}
 
         {currentView === 'form' && (
