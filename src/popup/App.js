@@ -4,7 +4,8 @@ import { ScraperForm } from './components/ScraperForm';
 import { DataTable } from './components/DataTable';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
-import { Login } from './components/Login';
+// ========== Login 组件导入已注释 - 登录验证已禁用 ==========
+// import { Login } from './components/Login';
 import { useScrapers } from './hooks/useScrapers';
 import { useCurrentTab } from './hooks/useCurrentTab';
 import { useAuth } from './hooks/useAuth';
@@ -217,16 +218,17 @@ function App() {
     }
   };
 
-  const handleLoginSuccess = (data) => {
-    console.log('登录成功，用户信息:', data.user);
-    checkAuthStatus();
-  };
+  // ========== 登录相关处理函数已注释 ==========
+  // const handleLoginSuccess = (data) => {
+  //   console.log('登录成功，用户信息:', data.user);
+  //   checkAuthStatus();
+  // };
 
-  const handleLogout = () => {
-    logout();
-    setCurrentView('list');
-    setScrapedData([]);
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   setCurrentView('list');
+  //   setScrapedData([]);
+  // };
 
   // 处理添加搜索关键词选择器
   const handleAddSearchKeywordHelper = async () => {
@@ -251,32 +253,33 @@ function App() {
     }
   };
 
-  // 如果正在检查登录状态
-  if (authLoading) {
-    return (
-      <div className="app">
-        <div className="header">
-          <h1>数据猎手专业版</h1>
-        </div>
-        <LoadingSpinner message="正在加载..." />
-      </div>
-    );
-  }
+  // ========== 登录验证已禁用 - 以下代码已注释 ==========
+  // // 如果正在检查登录状态
+  // if (authLoading) {
+  //   return (
+  //     <div className="app">
+  //       <div className="header">
+  //         <h1>数据猎手专业版</h1>
+  //       </div>
+  //       <LoadingSpinner message="正在加载..." />
+  //     </div>
+  //   );
+  // }
 
-  // 如果未登录，显示登录页面
-  if (!isAuthenticated) {
-    return (
-      <div className="app">
-        <div className="header">
-          <h1>数据猎手专业版</h1>
-        </div>
-        <Login 
-          onLoginSuccess={handleLoginSuccess} 
-          sessionExpired={sessionExpired}
-        />
-      </div>
-    );
-  }
+  // // 如果未登录，显示登录页面
+  // if (!isAuthenticated) {
+  //   return (
+  //     <div className="app">
+  //       <div className="header">
+  //         <h1>数据猎手专业版</h1>
+  //       </div>
+  //       <Login 
+  //         onLoginSuccess={handleLoginSuccess} 
+  //         sessionExpired={sessionExpired}
+  //       />
+  //     </div>
+  //   );
+  // }
 
   if (isLoading) {
     return (
@@ -309,7 +312,8 @@ function App() {
       <div className="header">
         <h1>数据猎手专业版</h1>
         <div className="header-buttons">
-          {userInfo && (
+          {/* ========== 用户信息和退出按钮已注释 - 登录验证已禁用 ========== */}
+          {/* {userInfo && (
             <span className="user-info" style={{ 
               marginRight: '12px', 
               fontSize: '12px', 
@@ -334,7 +338,7 @@ function App() {
                 退出
               </button>
             </span>
-          )}
+          )} */}
           {currentView !== 'list' && (
             <button 
               className="back-button"

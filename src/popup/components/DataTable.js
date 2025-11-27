@@ -12,6 +12,7 @@ import { TableToolbar } from './TableToolbar';
 import shandongRegions from '../../data/shandong_regions.json';
 import Papa from 'papaparse';
 import { saveAs } from 'file-saver';
+import { API_CONFIG } from '../../config/api';
 
 const columnHelper = createColumnHelper();
 
@@ -63,15 +64,16 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
       setIsInferringRegion(true);
       
       try {
-        const storage = await chrome.storage.local.get(['accessToken', 'apiUrl']);
-        const token = storage.accessToken;
-        const apiUrl = storage.apiUrl;
+        // ========== 登录验证已禁用 - 使用 API_CONFIG 获取 API URL ==========
+        const apiUrl = API_CONFIG.BASE_URL;
+        const storage = await chrome.storage.local.get(['accessToken']);
+        const token = storage.accessToken; // token 可选，如果后端不需要认证
         
         console.log('🔑 存储信息检查:');
-        console.log('  - accessToken:', token ? `${token.substring(0, 20)}...` : '❌ 未找到');
+        console.log('  - accessToken:', token ? `${token.substring(0, 20)}...` : '❌ 未找到（登录验证已禁用）');
         console.log('  - apiUrl:', apiUrl || '❌ 未找到');
         
-        if (token && apiUrl) {
+        if (apiUrl) {
           // 优先使用完整 URL，如果后端无法识别，再尝试域名
           let urlToSend = exportData[0].href;
           let domain = '';
@@ -109,10 +111,14 @@ export function DataTable({ data, scraper, onBack, onSwitchContainer }) {
           console.log('  - 发送的参数:', urlToSend);
           console.log('  - Token:', token ? `${token.substring(0, 20)}...` : 'null');
           
+          // ========== 登录验证已禁用 - Authorization header 可选 ==========
+          const headers = {};
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+          
           const response = await fetch(requestUrl, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+            headers: headers
           });
           
           console.log('📥 API 响应状态:', response.status, response.statusText);
@@ -454,22 +460,28 @@ if __name__ == '__main__':
     setExportLogs(['开始导出...']);
 
     try {
-      // 获取存储的 token
-      const storage = await chrome.storage.local.get(['accessToken', 'apiUrl']);
-      const token = storage.accessToken;
+      // ========== 登录验证已禁用 - token 可选 ==========
+      const storage = await chrome.storage.local.get(['accessToken']);
+      const token = storage.accessToken; // token 可选，如果后端不需要认证
 
-      if (!token) {
-        setImportResult(null);
-        setExportLogs(['✗ 未登录，请先登录后再导出']);
-        return;
+      // ========== token 检查已注释 - 登录验证已禁用 ==========
+      // if (!token) {
+      //   setImportResult(null);
+      //   setExportLogs(['✗ 未登录，请先登录后再导出']);
+      //   return;
+      // }
+
+      // ========== Authorization header 可选 ==========
+      const headers = { 
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const response = await fetch(postData.url, {
         method: postData.method,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: headers,
         body: JSON.stringify(postData.payload)
       });
 
